@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Grid, Stack, Typography } from '@mui/material'
+import { Grid, Stack } from '@mui/material'
 import { PrimaryButton, SecondaryButton } from '../components/buttons'
 import { FormSection } from '../components/form'
 import { useValidate, type ValidationErrors } from '../components/hooks'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
-import { setActiveTab, setFormValues } from '../store/mspWizardSlice'
+import { setActiveTab, setMspDetailsValues } from '../store/mspWizardSlice'
 import { FORM_FIELDS, splitFieldsInHalf } from './config'
 import type { FormValues } from './types'
 import { useLocationOptions } from '../services/useLocationOptions'
@@ -42,7 +42,7 @@ const MspDetails: React.FC<Props> = ({
     baseUrl = BASE_URL
 }) => {
     const dispatch = useAppDispatch()
-    const formValues = useAppSelector((state) => state.mspWizard.formValues)
+    const formValues = useAppSelector((state) => state.mspWizard.mspDetailsValues)
     const [submitAttempted, setSubmitAttempted] = useState(false)
 
     const { companies, countries, states, cities, loadingCompanies, loadingCountries, loadingStates, loadingCities } = useLocationOptions({
@@ -50,7 +50,7 @@ const MspDetails: React.FC<Props> = ({
         selectedCountry: formValues.country ?? '',
         selectedState: formValues.state ?? ''
     })
-    const { errors, hasErrors, validate } = useValidate(formValues, validateMspDetails)
+    const { errors, validate } = useValidate(formValues, validateMspDetails)
 
     const handleChange = (name: string, value: string) => {
         const next: FormValues = { ...formValues, [name]: value }
@@ -61,7 +61,7 @@ const MspDetails: React.FC<Props> = ({
         if (name === 'state') {
             next.city = ''
         }
-        dispatch(setFormValues(next))
+        dispatch(setMspDetailsValues(next))
     }
 
     const [leftColumnFields, rightColumnFields] = splitFieldsInHalf(FORM_FIELDS)
@@ -78,8 +78,6 @@ const MspDetails: React.FC<Props> = ({
             dispatch(setActiveTab('billing'))
         }
     }
-
-    const firstError = Object.values(errors).find(Boolean)
 
     return (
         <Grid container spacing={2} alignItems="stretch">
@@ -122,11 +120,6 @@ const MspDetails: React.FC<Props> = ({
                     <SecondaryButton onClick={() => dispatch(setActiveTab('details'))}>back</SecondaryButton>
                     <PrimaryButton onClick={handleNextClick}>next</PrimaryButton>
                 </Stack>
-                {submitAttempted && hasErrors && firstError && (
-                    <Typography color="error" sx={{ textAlign: 'center', mt: 1 }}>
-                        {firstError}
-                    </Typography>
-                )}
             </Grid>
         </Grid>
     )

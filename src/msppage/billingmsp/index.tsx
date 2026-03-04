@@ -14,7 +14,7 @@ const App: React.FC = () => {
       
       {/* Header */}
       <Box sx={billingMspPageStyles.header}>
-        <Typography variant="h6" sx={billingMspPageStyles.headerTitle}>
+        <Typography variant="h6" sx={{ ...billingMspPageStyles.headerTitle, textTransform: 'capitalize' }}>
           vendor information
         </Typography>
       </Box>
@@ -23,6 +23,7 @@ const App: React.FC = () => {
       <Box sx={billingMspPageStyles.tabsRow}>
         <Button
           variant={activeTab === 'details' ? 'contained' : 'outlined'}
+          sx={{ textTransform: 'capitalize' }}
           onClick={() => dispatch(setActiveTab('details'))}
         >
           details
@@ -30,6 +31,7 @@ const App: React.FC = () => {
 
         <Button
           variant={activeTab === 'billing' ? 'contained' : 'outlined'}
+          sx={{ textTransform: 'capitalize' }}
           onClick={() => dispatch(setActiveTab('billing'))}
         >
           billing

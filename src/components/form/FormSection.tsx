@@ -24,7 +24,7 @@ const STATUS_OPTIONS = [
   { label: 'inactive', value: 'inactive' }
 ]
 
-const REFERENCE_OPTIONS = ['background verification', 'drug test']
+const PURPOSE_OPTIONS = ['background verification', 'drug test']
 
 const formatCountryCodePhone = (input: string): string => {
   const raw = input.replace(/[^\d+]/g, '')
@@ -144,13 +144,13 @@ const FormSection: React.FC<FormSectionProps> = ({
           )
         }
 
-        if (field.type === 'reference') {
+        if (field.type === 'purpose') {
           return (
             <Grid item xs={12} key={field.key}>
               <FormTextField
                 label={field.label}
                 value={value}
-                options={REFERENCE_OPTIONS}
+                options={PURPOSE_OPTIONS}
                 error={hasError}
                 helperText={errorMessage}
                 onChange={(nextValue) => onChange(field.key, nextValue)}

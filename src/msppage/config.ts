@@ -20,7 +20,7 @@ export const FORM_FIELD_LABELS = [
     'fax',
     'website',
     'status',
-    'reference'
+    'purpose'
 ]
 
 export const FORM_FIELDS: FieldDefinition[] = FORM_FIELD_LABELS.map((label) => {
@@ -29,7 +29,7 @@ export const FORM_FIELDS: FieldDefinition[] = FORM_FIELD_LABELS.map((label) => {
     if (label === 'state') return { label, key: toFieldKey(label), type: 'state' }
     if (label === 'city') return { label, key: toFieldKey(label), type: 'city' }
     if (label.toLowerCase() === 'status') return { label, key: toFieldKey(label), type: 'status' }
-    if (label === 'reference') return { label, key: toFieldKey(label), type: 'reference' }
+    if (label === 'purpose') return { label, key: toFieldKey(label), type: 'purpose' }
     return { label, key: toFieldKey(label), type: 'text' }
 })
 

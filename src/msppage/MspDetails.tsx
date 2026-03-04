@@ -4,7 +4,8 @@ import { PrimaryButton, SecondaryButton } from '../components/buttons'
 import { FormSection } from '../components/form'
 import { useValidate, type ValidationErrors } from '../components/hooks'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
-import { setActiveTab, setMspDetailsValues } from '../store/mspWizardSlice'
+import { mspWizardActions } from '../store/mspWizardSlice'
+import { selectMspDetailsValues } from '../store/mspWizardSelectors'
 import { FORM_FIELDS, splitFieldsInHalf } from './config'
 import type { FormValues } from './types'
 import { useLocationOptions } from '../services/useLocationOptions'
@@ -42,7 +43,7 @@ const MspDetails: React.FC<Props> = ({
     baseUrl = BASE_URL
 }) => {
     const dispatch = useAppDispatch()
-    const formValues = useAppSelector((state) => state.mspWizard.mspDetailsValues)
+    const formValues = useAppSelector(selectMspDetailsValues)
     const [submitAttempted, setSubmitAttempted] = useState(false)
 
     const { companies, countries, states, cities, loadingCompanies, loadingCountries, loadingStates, loadingCities } = useLocationOptions({
@@ -61,7 +62,7 @@ const MspDetails: React.FC<Props> = ({
         if (name === 'state') {
             next.city = ''
         }
-        dispatch(setMspDetailsValues(next))
+        dispatch(mspWizardActions.setMspDetailsValues(next))
     }
 
     const [leftColumnFields, rightColumnFields] = splitFieldsInHalf(FORM_FIELDS)
@@ -75,7 +76,7 @@ const MspDetails: React.FC<Props> = ({
     const handleNextClick = () => {
         setSubmitAttempted(true)
         if (validate()) {
-            dispatch(setActiveTab('billing'))
+            dispatch(mspWizardActions.setActiveTab('billing'))
         }
     }
 
@@ -117,7 +118,7 @@ const MspDetails: React.FC<Props> = ({
 
             <Grid item xs={12}>
                 <Stack direction="row" justifyContent="center" spacing={2} sx={{ mt: 1 }}>
-                    <SecondaryButton onClick={() => dispatch(setActiveTab('details'))}>back</SecondaryButton>
+                    <SecondaryButton onClick={() => dispatch(mspWizardActions.setActiveTab('details'))}>back</SecondaryButton>
                     <PrimaryButton onClick={handleNextClick}>next</PrimaryButton>
                 </Stack>
             </Grid>

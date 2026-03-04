@@ -3,11 +3,12 @@ import MspDetails from '../MspDetails'
 import Billing from './billing'
 import { billingMspPageStyles } from './index.styles'
 import { useAppDispatch, useAppSelector } from '../../store/hooks'
-import { setActiveTab } from '../../store/mspWizardSlice'
+import { mspWizardActions } from '../../store/mspWizardSlice'
+import { selectActiveTab } from '../../store/mspWizardSelectors'
 
-const App: React.FC = () => {
+const BillingMspPage: React.FC = () => {
   const dispatch = useAppDispatch()
-  const activeTab = useAppSelector((state) => state.mspWizard.activeTab)
+  const activeTab = useAppSelector(selectActiveTab)
 
   return (
     <Container maxWidth="md" sx={billingMspPageStyles.container}>
@@ -24,7 +25,7 @@ const App: React.FC = () => {
         <Button
           variant={activeTab === 'details' ? 'contained' : 'outlined'}
           sx={{ textTransform: 'capitalize' }}
-          onClick={() => dispatch(setActiveTab('details'))}
+          onClick={() => dispatch(mspWizardActions.setActiveTab('details'))}
         >
           details
         </Button>
@@ -32,7 +33,7 @@ const App: React.FC = () => {
         <Button
           variant={activeTab === 'billing' ? 'contained' : 'outlined'}
           sx={{ textTransform: 'capitalize' }}
-          onClick={() => dispatch(setActiveTab('billing'))}
+          onClick={() => dispatch(mspWizardActions.setActiveTab('billing'))}
         >
           billing
         </Button>
@@ -46,4 +47,4 @@ const App: React.FC = () => {
   )
 }
 
-export default App
+export default BillingMspPage

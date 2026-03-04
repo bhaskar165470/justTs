@@ -55,6 +55,13 @@ const mapFormToBilling = (values: FormValues): BillingValues => ({
   zip: values.zip || ''
 })
 
+const setFieldValue = (
+  target: Record<string, string>,
+  payload: { field: string; value: string }
+) => {
+  target[payload.field] = payload.value
+}
+
 const initialState: MspWizardState = {
   activeTab: 'details',
   mspDetailsValues: {},
@@ -86,16 +93,24 @@ const mspWizardSlice = createSlice({
       state,
       action: PayloadAction<{ field: keyof BillingValues; value: string }>
     ) => {
-      state.billingValues[action.payload.field] = action.payload.value
+      setFieldValue(state.billingValues, {
+        field: action.payload.field,
+        value: action.payload.value
+      })
     },
     setAccountsPayableField: (
       state,
       action: PayloadAction<{ field: keyof AccountsPayableValues; value: string }>
     ) => {
-      state.accountsPayableValues[action.payload.field] = action.payload.value
+      setFieldValue(state.accountsPayableValues, {
+        field: action.payload.field,
+        value: action.payload.value
+      })
     }
   }
 })
+
+export const mspWizardActions = mspWizardSlice.actions
 
 export const {
   setActiveTab,
@@ -103,6 +118,6 @@ export const {
   setSameAsMspDetails,
   setBillingField,
   setAccountsPayableField
-} = mspWizardSlice.actions
+} = mspWizardActions
 
 export default mspWizardSlice.reducer

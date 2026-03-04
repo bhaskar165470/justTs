@@ -14,13 +14,15 @@ import { PrimaryButton, SecondaryButton } from '../../components/buttons'
 import { useValidate, type ValidationErrors } from '../../components/hooks'
 import { useAppDispatch, useAppSelector } from '../../store/hooks'
 import {
-  setAccountsPayableField,
-  setActiveTab,
-  setBillingField,
-  setSameAsMspDetails,
+  mspWizardActions,
   type BillingValues,
   type AccountsPayableValues
 } from '../../store/mspWizardSlice'
+import {
+  selectAccountsPayableValues,
+  selectBillingValues,
+  selectSameAsMspDetails
+} from '../../store/mspWizardSelectors'
 import { FORM_FIELDS } from '../config'
 
 interface BillingProps {
@@ -90,9 +92,9 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
   const Billing: React.FC<BillingProps> = ({ onNext }) => {
   const dispatch = useAppDispatch()
-  const sameAsMspDetails = useAppSelector((state) => state.mspWizard.sameAsMspDetails)
-  const billingValues = useAppSelector((state) => state.mspWizard.billingValues)
-  const accountsPayableValues = useAppSelector((state) => state.mspWizard.accountsPayableValues)
+  const sameAsMspDetails = useAppSelector(selectSameAsMspDetails)
+  const billingValues = useAppSelector(selectBillingValues)
+  const accountsPayableValues = useAppSelector(selectAccountsPayableValues)
   const [submitAttempted, setSubmitAttempted] = useState(false)
 
   const validationValues = { ...billingValues, ...accountsPayableValues }
@@ -125,12 +127,12 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
   const handleFieldChange = (field: keyof BillingValues, value: string) => {
     const nextValue = field === 'zip' ? formatZip(value) : value
-    dispatch(setBillingField({ field, value: nextValue }))
+    dispatch(mspWizardActions.setBillingField({ field, value: nextValue }))
   }
 
   const handleAccountsPayableFieldChange = (field: keyof AccountsPayableValues, value: string) => {
     const nextValue = field === 'phone' ? formatCountryCodePhone(value) : value
-    dispatch(setAccountsPayableField({ field, value: nextValue }))
+    dispatch(mspWizardActions.setAccountsPayableField({ field, value: nextValue }))
   }
 
   const handleNextClick = () => {
@@ -154,7 +156,7 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
           control={
             <Checkbox
               checked={sameAsMspDetails}
-              onChange={(event) => dispatch(setSameAsMspDetails(event.target.checked))}
+              onChange={(event) => dispatch(mspWizardActions.setSameAsMspDetails(event.target.checked))}
             />
           }
           label="same as msp details"
@@ -208,7 +210,7 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       </Paper>
 
       <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 2 }}>
-        <PrimaryButton onClick={() => dispatch(setActiveTab('details'))}>back</PrimaryButton>
+        <PrimaryButton onClick={() => dispatch(mspWizardActions.setActiveTab('details'))}>back</PrimaryButton>
         <SecondaryButton onClick={handleNextClick}>next</SecondaryButton>
       </Box>
     </Container>

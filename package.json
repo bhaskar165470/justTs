@@ -1,0 +1,28 @@
+{
+  "name": "justts-react-form",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.11.0",
+    "@emotion/styled": "^11.11.0",
+    "@mui/material": "^5.13.0",
+    "@reduxjs/toolkit": "^2.11.2",
+    "axios": "^1.11.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-redux": "^9.2.0",
+    "react-router-dom": "^7.13.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "typescript": "^5.3.0",
+    "vite": "^5.0.0"
+  }
+}

@@ -17,7 +17,7 @@ import {
   setAccountsPayableField,
   setActiveTab,
   setBillingField,
-  setSameAsFormPanel,
+  setSameAsMspDetails,
   type BillingValues,
   type AccountsPayableValues
 } from '../../store/mspWizardSlice'
@@ -90,7 +90,7 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
   const Billing: React.FC<BillingProps> = ({ onNext }) => {
   const dispatch = useAppDispatch()
-  const sameAsFormPanel = useAppSelector((state) => state.mspWizard.sameAsFormPanel)
+  const sameAsMspDetails = useAppSelector((state) => state.mspWizard.sameAsMspDetails)
   const billingValues = useAppSelector((state) => state.mspWizard.billingValues)
   const accountsPayableValues = useAppSelector((state) => state.mspWizard.accountsPayableValues)
   const [submitAttempted, setSubmitAttempted] = useState(false)
@@ -115,7 +115,7 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
     return errors
   }
-  const { errors, hasErrors, validate } = useValidate(validationValues, validateBilling)
+  const { errors, validate } = useValidate(validationValues, validateBilling)
 
   useEffect(() => {
     if (submitAttempted) {
@@ -140,13 +140,12 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     }
   }
 
-  const firstError = Object.values(errors).find(Boolean)
   const fieldErrors = submitAttempted ? errors : {}
 
   return (
     <Container>
       <Paper sx={{ p: 3 }}>
-        <Typography variant="h6" sx={{ mb: 2 }}>
+        <Typography variant="h6" sx={{ mb: 2, textTransform: 'capitalize' }}>
           billing information
         </Typography>
         <Divider sx={{ mb: 2 }} />
@@ -154,11 +153,11 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         <FormControlLabel
           control={
             <Checkbox
-              checked={sameAsFormPanel}
-              onChange={(event) => dispatch(setSameAsFormPanel(event.target.checked))}
+              checked={sameAsMspDetails}
+              onChange={(event) => dispatch(setSameAsMspDetails(event.target.checked))}
             />
           }
-          label="same as form panel"
+          label="same as msp details"
           sx={{ mb: 2 }}
         />
 
@@ -187,7 +186,7 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       </Paper>
 
       <Paper sx={{ p: 3, mt: 2 }}>
-        <Typography variant="h6" sx={{ mb: 2 }}>
+        <Typography variant="h6" sx={{ mb: 2, textTransform: 'capitalize' }}>
           a/c payable info
         </Typography>
         <Divider sx={{ mb: 2 }} />
@@ -212,11 +211,6 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         <PrimaryButton onClick={() => dispatch(setActiveTab('details'))}>back</PrimaryButton>
         <SecondaryButton onClick={handleNextClick}>next</SecondaryButton>
       </Box>
-      {submitAttempted && hasErrors && firstError && (
-        <Typography color="error" sx={{ textAlign: 'center', mt: 1 }}>
-          {firstError}
-        </Typography>
-      )}
     </Container>
   )
 }

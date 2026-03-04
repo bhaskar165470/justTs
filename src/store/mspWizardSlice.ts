@@ -22,8 +22,8 @@ export interface AccountsPayableValues {
 
 export interface MspWizardState {
   activeTab: ActiveTab
-  formValues: FormValues
-  sameAsFormPanel: boolean
+  mspDetailsValues: FormValues
+  sameAsMspDetails: boolean
   billingValues: BillingValues
   accountsPayableValues: AccountsPayableValues
 }
@@ -57,8 +57,8 @@ const mapFormToBilling = (values: FormValues): BillingValues => ({
 
 const initialState: MspWizardState = {
   activeTab: 'details',
-  formValues: {},
-  sameAsFormPanel: false,
+  mspDetailsValues: {},
+  sameAsMspDetails: false,
   billingValues: BILLING_INITIAL_VALUES,
   accountsPayableValues: ACCOUNTS_PAYABLE_INITIAL_VALUES
 }
@@ -70,16 +70,16 @@ const mspWizardSlice = createSlice({
     setActiveTab: (state, action: PayloadAction<ActiveTab>) => {
       state.activeTab = action.payload
     },
-    setFormValues: (state, action: PayloadAction<FormValues>) => {
-      state.formValues = action.payload
-      if (state.sameAsFormPanel) {
+    setMspDetailsValues: (state, action: PayloadAction<FormValues>) => {
+      state.mspDetailsValues = action.payload
+      if (state.sameAsMspDetails) {
         state.billingValues = mapFormToBilling(action.payload)
       }
     },
-    setSameAsFormPanel: (state, action: PayloadAction<boolean>) => {
-      state.sameAsFormPanel = action.payload
+    setSameAsMspDetails: (state, action: PayloadAction<boolean>) => {
+      state.sameAsMspDetails = action.payload
       if (action.payload) {
-        state.billingValues = mapFormToBilling(state.formValues)
+        state.billingValues = mapFormToBilling(state.mspDetailsValues)
       }
     },
     setBillingField: (
@@ -99,8 +99,8 @@ const mspWizardSlice = createSlice({
 
 export const {
   setActiveTab,
-  setFormValues,
-  setSameAsFormPanel,
+  setMspDetailsValues,
+  setSameAsMspDetails,
   setBillingField,
   setAccountsPayableField
 } = mspWizardSlice.actions

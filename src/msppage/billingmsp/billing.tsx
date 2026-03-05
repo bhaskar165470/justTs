@@ -22,58 +22,13 @@ import {
   selectBillingValues,
   selectSameAsMspDetails
 } from '../../store/mspWizardSelectors'
-import { FORM_FIELDS } from '../config'
+import { ACCOUNTS_PAYABLE_FIELDS, BILLING_ADDRESS_FIELDS } from '../config'
 
 interface BillingProps {
   onNext?: () => void
 }
 
 type BillingAddressFieldKey = 'address1' | 'address2' | 'country' | 'state' | 'city' | 'zip'
-type AccountsPayableFieldKey = keyof AccountsPayableValues
-
-interface BillingAddressField {
-  key: BillingAddressFieldKey
-  label: string
-  isHalfWidth?: boolean
-}
-
-interface AccountsPayableField {
-  key: AccountsPayableFieldKey
-  label: string
-  isHalfWidth?: boolean
-  type?: 'text' | 'email' | 'number' | 'tel'
-}
-
-const FORM_FIELD_LABELS_BY_KEY: Record<string, string> = FORM_FIELDS.reduce<Record<string, string>>(
-  (acc, field) => {
-    acc[field.key] = field.label
-    return acc
-  },
-  {}
-)
-
-const formatFieldLabel = (label: string): string => label.replace(/([A-Za-z])(\d)/g, '$1 $2')
-
-const getFieldLabel = (key: string, fallback: string): string => {
-  const mappedLabel = FORM_FIELD_LABELS_BY_KEY[key]
-  if (!mappedLabel) return fallback
-  return formatFieldLabel(mappedLabel)
-}
-
-const BILLING_ADDRESS_FIELD_KEYS: BillingAddressFieldKey[] = ['address1', 'address2', 'country', 'state', 'city', 'zip']
-
-const BILLING_ADDRESS_FIELDS: BillingAddressField[] = BILLING_ADDRESS_FIELD_KEYS.map((key) => ({
-  key,
-  label: getFieldLabel(key, key),
-  isHalfWidth: key === 'country' || key === 'state' || key === 'city' || key === 'zip'
-}))
-
-const ACCOUNTS_PAYABLE_FIELDS: AccountsPayableField[] = [
-  { key: 'name', label: getFieldLabel('name', 'name'), isHalfWidth: true },
-  { key: 'phone', label: 'phone', isHalfWidth: true, type: 'tel' },
-  { key: 'fax', label: getFieldLabel('fax', 'fax'), isHalfWidth: true },
-  { key: 'email', label: getFieldLabel('email', 'email'), isHalfWidth: true, type: 'email' }
-]
 
 const formatCountryCodePhone = (input: string): string => {
   const raw = input.replace(/[^\d+]/g, '')
@@ -179,10 +134,10 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
             >
               <InputField
                 label={field.label}
-                value={billingValues[field.key]}
-                error={Boolean(fieldErrors[field.key])}
-                helperText={fieldErrors[field.key]}
-                onChange={(value) => handleFieldChange(field.key, value)}
+                value={billingValues[field.key as BillingAddressFieldKey]}
+                error={Boolean(fieldErrors[field.key as keyof typeof fieldErrors])}
+                helperText={fieldErrors[field.key as keyof typeof fieldErrors]}
+                onChange={(value) => handleFieldChange(field.key as BillingAddressFieldKey, value)}
               />
             </Box>
           ))}
@@ -205,8 +160,8 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
                 label={field.label}
                 {...(field.type ? { type: field.type } : {})}
                 value={accountsPayableValues[field.key]}
-                error={Boolean(fieldErrors[field.key])}
-                helperText={fieldErrors[field.key]}
+                error={Boolean(fieldErrors[field.key as keyof typeof fieldErrors])}
+                helperText={fieldErrors[field.key as keyof typeof fieldErrors]}
                 onChange={(value) => handleAccountsPayableFieldChange(field.key, value)}
               />
             </Box>

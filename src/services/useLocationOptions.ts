@@ -1,9 +1,23 @@
-import { useEffect, useState } from 'react'
-import { getCities, getCompanies, getCountries, getStates, BASE_URL } from './locationApi'
+// Temporary frontend-only option source.
+// Keep this until backend endpoints are finalized for MSP options.
+const LOCAL_OPTIONS = {
+  companies: ['Demo Company', 'Acme Logistics', 'Northwind Systems'],
+  countries: ['United States'],
+  statesByCountry: {
+    'United States': ['California', 'Texas', 'New York', 'Florida']
+  },
+  citiesByState: {
+    California: ['Los Angeles', 'San Francisco', 'San Diego'],
+    Texas: ['Houston', 'Austin', 'Dallas'],
+    'New York': ['New York City', 'Buffalo'],
+    Florida: ['Miami', 'Orlando']
+  }
+} as const
 
 interface UseLocationOptionsArgs {
-    baseUrl?: string
+    // Current country selected in the form; used to derive dependent states.
     selectedCountry: string
+    // Current state selected in the form; used to derive dependent cities.
     selectedState: string
 }
 
@@ -19,101 +33,30 @@ interface UseLocationOptionsResult {
 }
 
 export const useLocationOptions = ({
-    baseUrl = BASE_URL,
-    selectedCountry,
-    selectedState
+  selectedCountry,
+  selectedState
 }: UseLocationOptionsArgs): UseLocationOptionsResult => {
-    const [companies, setCompanies] = useState<string[]>([])
-    const [countries, setCountries] = useState<string[]>([])
-    const [states, setStates] = useState<string[]>([])
-    const [cities, setCities] = useState<string[]>([])
-    const [loadingCompanies, setLoadingCompanies] = useState(false)
-    const [loadingCountries, setLoadingCountries] = useState(false)
-    const [loadingStates, setLoadingStates] = useState(false)
-    const [loadingCities, setLoadingCities] = useState(false)
+  // Static top-level lists used by company/country fields.
+  const companies = [...LOCAL_OPTIONS.companies]
+  const countries = [...LOCAL_OPTIONS.countries]
+  // Dependent list: only show states for selected country.
+  const states = selectedCountry
+    ? [...(LOCAL_OPTIONS.statesByCountry[selectedCountry as keyof typeof LOCAL_OPTIONS.statesByCountry] ?? [])]
+    : []
+  // Dependent list: only show cities for selected state.
+  const cities = selectedState
+    ? [...(LOCAL_OPTIONS.citiesByState[selectedState as keyof typeof LOCAL_OPTIONS.citiesByState] ?? [])]
+    : []
 
-    useEffect(() => {
-        const loadCompanies = async () => {
-            setLoadingCompanies(true)
-            try {
-                const companyList = await getCompanies(baseUrl)
-                setCompanies(companyList)
-            } catch {
-                setCompanies([])
-            } finally {
-                setLoadingCompanies(false)
-            }
-        }
-
-        loadCompanies()
-    }, [baseUrl])
-
-    useEffect(() => {
-        const loadCountries = async () => {
-            setLoadingCountries(true)
-            try {
-                const countryList = await getCountries(baseUrl)
-                setCountries(countryList)
-            } catch {
-                setCountries([])
-            } finally {
-                setLoadingCountries(false)
-            }
-        }
-
-        loadCountries()
-    }, [baseUrl])
-
-    useEffect(() => {
-        const loadStates = async () => {
-            if (!selectedCountry) {
-                setStates([])
-                return
-            }
-
-            setLoadingStates(true)
-            try {
-                const stateList = await getStates(selectedCountry, baseUrl)
-                setStates(stateList)
-            } catch {
-                setStates([])
-            } finally {
-                setLoadingStates(false)
-            }
-        }
-
-        loadStates()
-    }, [selectedCountry, baseUrl])
-
-    useEffect(() => {
-        const loadCities = async () => {
-            if (!selectedState) {
-                setCities([])
-                return
-            }
-
-            setLoadingCities(true)
-            try {
-                const cityList = await getCities(selectedCountry, selectedState, baseUrl)
-                setCities(cityList)
-            } catch {
-                setCities([])
-            } finally {
-                setLoadingCities(false)
-            }
-        }
-
-        loadCities()
-    }, [selectedCountry, selectedState, baseUrl])
-
-    return {
-        companies,
-        countries,
-        states,
-        cities,
-        loadingCompanies,
-        loadingCountries,
-        loadingStates,
-        loadingCities
-    }
+  return {
+    companies,
+    countries,
+    states,
+    cities,
+    // Always false in static mode; these become real loading flags once API calls are enabled.
+    loadingCompanies: false,
+    loadingCountries: false,
+    loadingStates: false,
+    loadingCities: false
+  }
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Grid, Stack } from '@mui/material'
+import { Box, Stack } from '@mui/material'
 import { PrimaryButton, SecondaryButton } from '../components/buttons'
 import { FormSection } from '../components/form'
 import { useValidate, type ValidationErrors } from '../components/hooks'
@@ -9,11 +9,6 @@ import { selectMspDetailsValues } from '../store/mspWizardSelectors'
 import { FORM_FIELDS, splitFieldsInHalf } from './config'
 import type { FormValues } from './types'
 import { useLocationOptions } from '../services/useLocationOptions'
-import { BASE_URL } from '../services/locationApi'
-
-interface Props {
-    baseUrl?: string
-}
 
 const PHONE_PATTERN = /^\+\d{1,13}$/
 const ZIP_PATTERN = /^\d{6}$/
@@ -27,7 +22,7 @@ const validateMspDetails = (values: FormValues): ValidationErrors<FormValues> =>
     if (!values.state) errors.state = 'state is required'
     if (!values.city) errors.city = 'city is required'
     if (!values.zip) errors.zip = 'zip is required'
-    if (values.zip && !ZIP_PATTERN.test(values.zip)) errors.zip = 'zip must be 6 digits'
+    if (values.zip && !ZIP_PATTERN.test(values.zip)) errors.zip 
 
     ;(['phone-office', 'phone-home', 'cell'] as const).forEach((key) => {
         const value = values[key]
@@ -39,15 +34,12 @@ const validateMspDetails = (values: FormValues): ValidationErrors<FormValues> =>
     return errors
 }
 
-const MspDetails: React.FC<Props> = ({
-    baseUrl = BASE_URL
-}) => {
+const MspDetails: React.FC = () => {
     const dispatch = useAppDispatch()
     const formValues = useAppSelector(selectMspDetailsValues)
     const [submitAttempted, setSubmitAttempted] = useState(false)
 
     const { companies, countries, states, cities, loadingCompanies, loadingCountries, loadingStates, loadingCities } = useLocationOptions({
-        baseUrl,
         selectedCountry: formValues.country ?? '',
         selectedState: formValues.state ?? ''
     })
@@ -66,6 +58,7 @@ const MspDetails: React.FC<Props> = ({
     }
 
     const [leftColumnFields, rightColumnFields] = splitFieldsInHalf(FORM_FIELDS)
+    const columnFieldGroups = [leftColumnFields, rightColumnFields]
 
     useEffect(() => {
         if (submitAttempted) {
@@ -81,48 +74,33 @@ const MspDetails: React.FC<Props> = ({
     }
 
     return (
-        <Grid container spacing={2} alignItems="stretch">
-            <Grid item xs={12} md={6}>
-                <FormSection
-                    fields={leftColumnFields}
-                    formValues={formValues}
-                    errors={submitAttempted ? errors : {}}
-                    companies={companies}
-                    countries={countries}
-                    states={states}
-                    cities={cities}
-                    loadingCompanies={loadingCompanies}
-                    loadingCountries={loadingCountries}
-                    loadingStates={loadingStates}
-                    loadingCities={loadingCities}
-                    onChange={handleChange}
-                />
-            </Grid>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+            {columnFieldGroups.map((columnFields, index) => (
+                <Box key={`column-${index}`} sx={{ width: { xs: '100%', md: 'calc(50% - 8px)' } }}>
+                    <FormSection
+                        fields={columnFields}
+                        formValues={formValues}
+                        errors={submitAttempted ? errors : {}}
+                        companies={companies}
+                        countries={countries}
+                        states={states}
+                        cities={cities}
+                        loadingCompanies={loadingCompanies}
+                        loadingCountries={loadingCountries}
+                        loadingStates={loadingStates}
+                        loadingCities={loadingCities}
+                        onChange={handleChange}
+                    />
+                </Box>
+            ))}
 
-            <Grid item xs={12} md={6}>
-                <FormSection
-                    fields={rightColumnFields}
-                    formValues={formValues}
-                    errors={submitAttempted ? errors : {}}
-                    companies={companies}
-                    countries={countries}
-                    states={states}
-                    cities={cities}
-                    loadingCompanies={loadingCompanies}
-                    loadingCountries={loadingCountries}
-                    loadingStates={loadingStates}
-                    loadingCities={loadingCities}
-                    onChange={handleChange}
-                />
-            </Grid>
-
-            <Grid item xs={12}>
+            <Box sx={{ width: '100%' }}>
                 <Stack direction="row" justifyContent="center" spacing={2} sx={{ mt: 1 }}>
                     <SecondaryButton onClick={() => dispatch(mspWizardActions.setActiveTab('details'))}>back</SecondaryButton>
                     <PrimaryButton onClick={handleNextClick}>next</PrimaryButton>
                 </Stack>
-            </Grid>
-        </Grid>
+            </Box>
+        </Box>
     )
 }
 

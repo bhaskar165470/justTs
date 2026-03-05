@@ -4,7 +4,6 @@ import {
   Container,
   Box,
   Paper,
-  Grid,
   Checkbox,
   FormControlLabel,
   Divider
@@ -35,13 +34,13 @@ type AccountsPayableFieldKey = keyof AccountsPayableValues
 interface BillingAddressField {
   key: BillingAddressFieldKey
   label: string
-  md?: number
+  isHalfWidth?: boolean
 }
 
 interface AccountsPayableField {
   key: AccountsPayableFieldKey
   label: string
-  md?: number
+  isHalfWidth?: boolean
   type?: 'text' | 'email' | 'number' | 'tel'
 }
 
@@ -66,14 +65,14 @@ const BILLING_ADDRESS_FIELD_KEYS: BillingAddressFieldKey[] = ['address1', 'addre
 const BILLING_ADDRESS_FIELDS: BillingAddressField[] = BILLING_ADDRESS_FIELD_KEYS.map((key) => ({
   key,
   label: getFieldLabel(key, key),
-  md: key === 'country' || key === 'state' || key === 'city' || key === 'zip' ? 6 : 12
+  isHalfWidth: key === 'country' || key === 'state' || key === 'city' || key === 'zip'
 }))
 
 const ACCOUNTS_PAYABLE_FIELDS: AccountsPayableField[] = [
-  { key: 'name', label: getFieldLabel('name', 'name'), md: 6 },
-  { key: 'phone', label: 'phone', md: 6, type: 'tel' },
-  { key: 'fax', label: getFieldLabel('fax', 'fax'), md: 6 },
-  { key: 'email', label: getFieldLabel('email', 'email'), md: 6, type: 'email' }
+  { key: 'name', label: getFieldLabel('name', 'name'), isHalfWidth: true },
+  { key: 'phone', label: 'phone', isHalfWidth: true, type: 'tel' },
+  { key: 'fax', label: getFieldLabel('fax', 'fax'), isHalfWidth: true },
+  { key: 'email', label: getFieldLabel('email', 'email'), isHalfWidth: true, type: 'email' }
 ]
 
 const formatCountryCodePhone = (input: string): string => {
@@ -163,8 +162,8 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
           sx={{ mb: 2 }}
         />
 
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+          <Box sx={{ width: '100%' }}>
             <InputField
               label="bill to"
               value={billingValues.billTo}
@@ -172,9 +171,12 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
               helperText={fieldErrors.billTo}
               onChange={(value) => handleFieldChange('billTo', value)}
             />
-          </Grid>
+          </Box>
           {BILLING_ADDRESS_FIELDS.map((field) => (
-            <Grid item xs={12} md={field.md ?? 12} key={field.key}>
+            <Box
+              key={field.key}
+              sx={{ width: { xs: '100%', md: field.isHalfWidth ? 'calc(50% - 8px)' : '100%' } }}
+            >
               <InputField
                 label={field.label}
                 value={billingValues[field.key]}
@@ -182,9 +184,9 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
                 helperText={fieldErrors[field.key]}
                 onChange={(value) => handleFieldChange(field.key, value)}
               />
-            </Grid>
+            </Box>
           ))}
-        </Grid>
+        </Box>
       </Paper>
 
       <Paper sx={{ p: 3, mt: 2 }}>
@@ -193,9 +195,12 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         </Typography>
         <Divider sx={{ mb: 2 }} />
 
-        <Grid container spacing={2}>
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
           {ACCOUNTS_PAYABLE_FIELDS.map((field) => (
-            <Grid item xs={12} md={field.md ?? 12} key={field.key}>
+            <Box
+              key={field.key}
+              sx={{ width: { xs: '100%', md: field.isHalfWidth ? 'calc(50% - 8px)' : '100%' } }}
+            >
               <InputField
                 label={field.label}
                 {...(field.type ? { type: field.type } : {})}
@@ -204,9 +209,9 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
                 helperText={fieldErrors[field.key]}
                 onChange={(value) => handleAccountsPayableFieldChange(field.key, value)}
               />
-            </Grid>
+            </Box>
           ))}
-        </Grid>
+        </Box>
       </Paper>
 
       <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 2 }}>

@@ -1,4 +1,4 @@
-import Grid from '@mui/material/Grid'
+import { Box, Stack } from '@mui/material'
 import InputField from './InputField'
 import RadioField from './Radio'
 import FormTextField from './TextField'
@@ -56,122 +56,112 @@ const FormSection: React.FC<FormSectionProps> = ({
   loadingCities,
   onChange
 }) => {
+  const renderField = (field: FieldDefinition) => {
+    const value = formValues[field.key] ?? ''
+    const errorMessage = errors?.[field.key]
+    const hasError = Boolean(errorMessage)
+
+    if (field.type === 'company') {
+      return (
+        <FormTextField
+          label={field.label}
+          value={value}
+          options={companies}
+          loading={loadingCompanies}
+          error={hasError}
+          helperText={errorMessage}
+          onChange={(nextValue) => onChange(field.key, nextValue)}
+        />
+      )
+    }
+
+    if (field.type === 'country') {
+      return (
+        <FormTextField
+          label={field.label}
+          value={value}
+          options={countries}
+          loading={loadingCountries}
+          error={hasError}
+          helperText={errorMessage}
+          onChange={(nextValue) => onChange(field.key, nextValue)}
+        />
+      )
+    }
+
+    if (field.type === 'state') {
+      return (
+        <FormTextField
+          label={field.label}
+          value={value}
+          options={states}
+          disabled={!formValues.country}
+          loading={loadingStates}
+          error={hasError}
+          helperText={errorMessage}
+          onChange={(nextValue) => onChange(field.key, nextValue)}
+        />
+      )
+    }
+
+    if (field.type === 'city') {
+      return (
+        <FormTextField
+          label={field.label}
+          value={value}
+          options={cities}
+          disabled={!formValues.state}
+          loading={loadingCities}
+          error={hasError}
+          helperText={errorMessage}
+          onChange={(nextValue) => onChange(field.key, nextValue)}
+        />
+      )
+    }
+
+    if (field.type === 'status') {
+      return (
+        <RadioField
+          label={field.label}
+          value={value}
+          options={STATUS_OPTIONS}
+          error={hasError}
+          helperText={errorMessage}
+          onChange={(nextValue) => onChange(field.key, nextValue)}
+        />
+      )
+    }
+
+    if (field.type === 'purpose') {
+      return (
+        <FormTextField
+          label={field.label}
+          value={value}
+          options={PURPOSE_OPTIONS}
+          error={hasError}
+          helperText={errorMessage}
+          onChange={(nextValue) => onChange(field.key, nextValue)}
+        />
+      )
+    }
+
+    return (
+      <InputField
+        label={field.label}
+        value={value}
+        error={hasError}
+        helperText={errorMessage}
+        onChange={(nextValue) => onChange(field.key, getFormattedValue(field.key, nextValue))}
+      />
+    )
+  }
+
   return (
-    <Grid container spacing={2}>
-      {fields.map((field) => {
-        const value = formValues[field.key] ?? ''
-        const errorMessage = errors?.[field.key]
-        const hasError = Boolean(errorMessage)
-
-        if (field.type === 'company') {
-          return (
-            <Grid item xs={12} key={field.key}>
-              <FormTextField
-                label={field.label}
-                value={value}
-                options={companies}
-                loading={loadingCompanies}
-                error={hasError}
-                helperText={errorMessage}
-                onChange={(nextValue) => onChange(field.key, nextValue)}
-              />
-            </Grid>
-          )
-        }
-
-        if (field.type === 'country') {
-          return (
-            <Grid item xs={12} key={field.key}>
-              <FormTextField
-                label={field.label}
-                value={value}
-                options={countries}
-                loading={loadingCountries}
-                error={hasError}
-                helperText={errorMessage}
-                onChange={(nextValue) => onChange(field.key, nextValue)}
-              />
-            </Grid>
-          )
-        }
-
-        if (field.type === 'state') {
-          return (
-            <Grid item xs={12} key={field.key}>
-              <FormTextField
-                label={field.label}
-                value={value}
-                options={states}
-                disabled={!formValues.country}
-                loading={loadingStates}
-                error={hasError}
-                helperText={errorMessage}
-                onChange={(nextValue) => onChange(field.key, nextValue)}
-              />
-            </Grid>
-          )
-        }
-
-        if (field.type === 'city') {
-          return (
-            <Grid item xs={12} key={field.key}>
-              <FormTextField
-                label={field.label}
-                value={value}
-                options={cities}
-                disabled={!formValues.state}
-                loading={loadingCities}
-                error={hasError}
-                helperText={errorMessage}
-                onChange={(nextValue) => onChange(field.key, nextValue)}
-              />
-            </Grid>
-          )
-        }
-
-        if (field.type === 'status') {
-          return (
-            <Grid item xs={12} key={field.key}>
-              <RadioField
-                label={field.label}
-                value={value}
-                options={STATUS_OPTIONS}
-                error={hasError}
-                helperText={errorMessage}
-                onChange={(nextValue) => onChange(field.key, nextValue)}
-              />
-            </Grid>
-          )
-        }
-
-        if (field.type === 'purpose') {
-          return (
-            <Grid item xs={12} key={field.key}>
-              <FormTextField
-                label={field.label}
-                value={value}
-                options={PURPOSE_OPTIONS}
-                error={hasError}
-                helperText={errorMessage}
-                onChange={(nextValue) => onChange(field.key, nextValue)}
-              />
-            </Grid>
-          )
-        }
-
-        return (
-          <Grid item xs={12} key={field.key}>
-            <InputField
-              label={field.label}
-              value={value}
-              error={hasError}
-              helperText={errorMessage}
-              onChange={(nextValue) => onChange(field.key, getFormattedValue(field.key, nextValue))}
-            />
-          </Grid>
-        )
-      })}
-    </Grid>
+    <Stack spacing={2}>
+      {fields.map((field) => (
+        <Box key={field.key}>{renderField(field)}</Box>
+      ))}
+    </Stack>
   )
 }
 

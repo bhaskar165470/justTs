@@ -64,6 +64,11 @@ const BillingMspPage: React.FC = () => {
     setAccountsPayableValues((prev) => ({ ...prev, [field]: value }))
   }
 
+  const handleSubmitMsp = async () => {
+    // UI-only flow: no backend submit in this project.
+    window.alert('UI flow complete. Backend submit is disabled here.')
+  }
+
   return (
     <Container maxWidth="lg" sx={billingMspPageStyles.container}>
       <Box sx={billingMspPageStyles.header}>
@@ -102,6 +107,8 @@ const BillingMspPage: React.FC = () => {
           setBillingField={setBillingField}
           setAccountsPayableField={setAccountsPayableField}
           setActiveTab={setActiveTab}
+          onNext={handleSubmitMsp}
+          submitting={false}
         />
       )}
     </Container>

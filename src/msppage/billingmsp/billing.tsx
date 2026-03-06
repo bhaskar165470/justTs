@@ -26,7 +26,8 @@ interface BillingProps {
   setBillingField: (field: keyof BillingValues, value: string) => void
   setAccountsPayableField: (field: keyof AccountsPayableValues, value: string) => void
   setActiveTab: (tab: ActiveTab) => void
-  onNext?: () => void
+  onNext?: () => Promise<void> | void
+  submitting?: boolean
 }
 
 type BillingAddressFieldKey = 'address1' | 'address2' | 'country' | 'state' | 'city' | 'zip'
@@ -53,7 +54,8 @@ const Billing: React.FC<BillingProps> = ({
   setBillingField,
   setAccountsPayableField,
   setActiveTab,
-  onNext
+  onNext,
+  submitting = false
 }) => {
   const [submitAttempted, setSubmitAttempted] = useState(false)
 
@@ -95,10 +97,10 @@ const Billing: React.FC<BillingProps> = ({
     setAccountsPayableField(field, nextValue)
   }
 
-  const handleNextClick = () => {
+  const handleNextClick = async () => {
     setSubmitAttempted(true)
     if (validate()) {
-      onNext?.()
+      await onNext?.()
     }
   }
 
@@ -176,8 +178,12 @@ const Billing: React.FC<BillingProps> = ({
       </Paper>
 
       <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 2 }}>
-        <PrimaryButton onClick={() => setActiveTab('details')}>back</PrimaryButton>
-        <SecondaryButton onClick={handleNextClick}>next</SecondaryButton>
+        <PrimaryButton disabled={submitting} onClick={() => setActiveTab('details')}>
+          back
+        </PrimaryButton>
+        <SecondaryButton disabled={submitting} onClick={handleNextClick}>
+          {submitting ? 'saving...' : 'next'}
+        </SecondaryButton>
       </Box>
     </Container>
   )

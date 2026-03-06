@@ -1,62 +1,154 @@
-// Temporary frontend-only option source.
-// Keep this until backend endpoints are finalized for MSP options.
-const LOCAL_OPTIONS = {
-  companies: ['Demo Company', 'Acme Logistics', 'Northwind Systems'],
-  countries: ['United States'],
-  statesByCountry: {
-    'United States': ['California', 'Texas', 'New York', 'Florida']
-  },
-  citiesByState: {
-    California: ['Los Angeles', 'San Francisco', 'San Diego'],
-    Texas: ['Houston', 'Austin', 'Dallas'],
-    'New York': ['New York City', 'Buffalo'],
-    Florida: ['Miami', 'Orlando']
-  }
-} as const
+import { useEffect, useMemo, useState } from 'react'
+import {
+  getCitiesByStateId,
+  getCompanies,
+  getCountries,
+  getStatesByCountryId,
+  type NamedOption
+} from './locationApi'
 
 interface UseLocationOptionsArgs {
-    // Current country selected in the form; used to derive dependent states.
-    selectedCountry: string
-    // Current state selected in the form; used to derive dependent cities.
-    selectedState: string
+  selectedCountry: string
+  selectedState: string
 }
 
 interface UseLocationOptionsResult {
-    companies: string[]
-    countries: string[]
-    states: string[]
-    cities: string[]
-    loadingCompanies: boolean
-    loadingCountries: boolean
-    loadingStates: boolean
-    loadingCities: boolean
+  companies: string[]
+  countries: string[]
+  states: string[]
+  cities: string[]
+  loadingCompanies: boolean
+  loadingCountries: boolean
+  loadingStates: boolean
+  loadingCities: boolean
+}
+
+const findOptionIdByName = (options: NamedOption[], name: string): number | null => {
+  const selectedName = name.trim()
+  if (!selectedName) return null
+  const found = options.find((option) => option.name === selectedName)
+  return found?.id ?? null
 }
 
 export const useLocationOptions = ({
   selectedCountry,
   selectedState
 }: UseLocationOptionsArgs): UseLocationOptionsResult => {
-  // Static top-level lists used by company/country fields.
-  const companies = [...LOCAL_OPTIONS.companies]
-  const countries = [...LOCAL_OPTIONS.countries]
-  // Dependent list: only show states for selected country.
-  const states = selectedCountry
-    ? [...(LOCAL_OPTIONS.statesByCountry[selectedCountry as keyof typeof LOCAL_OPTIONS.statesByCountry] ?? [])]
-    : []
-  // Dependent list: only show cities for selected state.
-  const cities = selectedState
-    ? [...(LOCAL_OPTIONS.citiesByState[selectedState as keyof typeof LOCAL_OPTIONS.citiesByState] ?? [])]
-    : []
+  const [companyOptions, setCompanyOptions] = useState<NamedOption[]>([])
+  const [countryOptions, setCountryOptions] = useState<NamedOption[]>([])
+  const [stateOptions, setStateOptions] = useState<NamedOption[]>([])
+  const [cityOptions, setCityOptions] = useState<NamedOption[]>([])
+
+  const [loadingCompanies, setLoadingCompanies] = useState(false)
+  const [loadingCountries, setLoadingCountries] = useState(false)
+  const [loadingStates, setLoadingStates] = useState(false)
+  const [loadingCities, setLoadingCities] = useState(false)
+
+  useEffect(() => {
+    let active = true
+
+    const loadTopLevel = async () => {
+      try {
+        setLoadingCompanies(true)
+        setLoadingCountries(true)
+        const [companies, countries] = await Promise.all([getCompanies(), getCountries()])
+        if (!active) return
+        setCompanyOptions(companies)
+        setCountryOptions(countries)
+      } catch {
+        if (!active) return
+        setCompanyOptions([])
+        setCountryOptions([])
+      } finally {
+        if (!active) return
+        setLoadingCompanies(false)
+        setLoadingCountries(false)
+      }
+    }
+
+    void loadTopLevel()
+
+    return () => {
+      active = false
+    }
+  }, [])
+
+  useEffect(() => {
+    let active = true
+
+    const loadStates = async () => {
+      const countryId = findOptionIdByName(countryOptions, selectedCountry)
+      if (!countryId) {
+        setStateOptions([])
+        setCityOptions([])
+        return
+      }
+
+      try {
+        setLoadingStates(true)
+        const states = await getStatesByCountryId(countryId)
+        if (!active) return
+        setStateOptions(states)
+      } catch {
+        if (!active) return
+        setStateOptions([])
+      } finally {
+        if (!active) return
+        setLoadingStates(false)
+      }
+    }
+
+    void loadStates()
+
+    return () => {
+      active = false
+    }
+  }, [countryOptions, selectedCountry])
+
+  useEffect(() => {
+    let active = true
+
+    const loadCities = async () => {
+      const stateId = findOptionIdByName(stateOptions, selectedState)
+      if (!stateId) {
+        setCityOptions([])
+        return
+      }
+
+      try {
+        setLoadingCities(true)
+        const cities = await getCitiesByStateId(stateId)
+        if (!active) return
+        setCityOptions(cities)
+      } catch {
+        if (!active) return
+        setCityOptions([])
+      } finally {
+        if (!active) return
+        setLoadingCities(false)
+      }
+    }
+
+    void loadCities()
+
+    return () => {
+      active = false
+    }
+  }, [selectedState, stateOptions])
+
+  const companies = useMemo(() => companyOptions.map((option) => option.name), [companyOptions])
+  const countries = useMemo(() => countryOptions.map((option) => option.name), [countryOptions])
+  const states = useMemo(() => stateOptions.map((option) => option.name), [stateOptions])
+  const cities = useMemo(() => cityOptions.map((option) => option.name), [cityOptions])
 
   return {
     companies,
     countries,
     states,
     cities,
-    // Always false in static mode; these become real loading flags once API calls are enabled.
-    loadingCompanies: false,
-    loadingCountries: false,
-    loadingStates: false,
-    loadingCities: false
+    loadingCompanies,
+    loadingCountries,
+    loadingStates,
+    loadingCities
   }
 }

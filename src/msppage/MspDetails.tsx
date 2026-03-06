@@ -3,105 +3,107 @@ import { Box, Stack } from '@mui/material'
 import { PrimaryButton, SecondaryButton } from '../components/buttons'
 import { FormSection } from '../components/form'
 import { useValidate, type ValidationErrors } from '../components/hooks'
-import { useAppDispatch, useAppSelector } from '../store/hooks'
-import { mspWizardActions } from '../store/mspWizardSlice'
-import { selectMspDetailsValues } from '../store/mspWizardSelectors'
 import { FORM_FIELDS, splitFieldsInHalf } from './config'
 import type { FormValues } from './types'
 import { useLocationOptions } from '../services/useLocationOptions'
+import type { ActiveTab } from './types'
+
+interface MspDetailsProps {
+  formValues: FormValues
+  setMspDetailsValues: (values: FormValues) => void
+  setActiveTab: (tab: ActiveTab) => void
+}
 
 const PHONE_PATTERN = /^\+\d{1,13}$/
 const ZIP_PATTERN = /^\d{6}$/
 
 const validateMspDetails = (values: FormValues): ValidationErrors<FormValues> => {
-    const errors: ValidationErrors<FormValues> = {}
+  const errors: ValidationErrors<FormValues> = {}
 
-    if (!values.company) errors.company = 'company is required'
-    if (!values.name) errors.name = 'name is required'
-    if (!values.country) errors.country = 'country is required'
-    if (!values.state) errors.state = 'state is required'
-    if (!values.city) errors.city = 'city is required'
-    if (!values.zip) errors.zip = 'zip is required'
-    if (values.zip && !ZIP_PATTERN.test(values.zip)) errors.zip 
+  if (!values.company) errors.company = 'company is required'
+  if (!values.name) errors.name = 'name is required'
+  if (!values.country) errors.country = 'country is required'
+  if (!values.state) errors.state = 'state is required'
+  if (!values.city) errors.city = 'city is required'
+  if (!values.zip) errors.zip = 'zip is required'
+  if (values.zip && !ZIP_PATTERN.test(values.zip)) errors.zip
 
-    ;(['phone-office', 'phone-home', 'cell'] as const).forEach((key) => {
-        const value = values[key]
-        if (value && !PHONE_PATTERN.test(value)) {
-            errors[key] = `${key} must be in +countrycode format`
-        }
-    })
+  ;(['phone-office', 'phone-home', 'cell'] as const).forEach((key) => {
+    const value = values[key]
+    if (value && !PHONE_PATTERN.test(value)) {
+      errors[key] = `${key} must be in +countrycode format`
+    }
+  })
 
-    return errors
+  return errors
 }
 
-const MspDetails: React.FC = () => {
-    const dispatch = useAppDispatch()
-    const formValues = useAppSelector(selectMspDetailsValues)
-    const [submitAttempted, setSubmitAttempted] = useState(false)
+const MspDetails: React.FC<MspDetailsProps> = ({ formValues, setMspDetailsValues, setActiveTab }) => {
+  const [submitAttempted, setSubmitAttempted] = useState(false)
 
-    const { companies, countries, states, cities, loadingCompanies, loadingCountries, loadingStates, loadingCities } = useLocationOptions({
-        selectedCountry: formValues.country ?? '',
-        selectedState: formValues.state ?? ''
-    })
-    const { errors, validate } = useValidate(formValues, validateMspDetails)
+  const { companies, countries, states, cities, loadingCompanies, loadingCountries, loadingStates, loadingCities } = useLocationOptions({
+    selectedCountry: formValues.country ?? '',
+    selectedState: formValues.state ?? ''
+  })
+  const { errors, validate } = useValidate(formValues, validateMspDetails)
 
-    const handleChange = (name: string, value: string) => {
-        const next: FormValues = { ...formValues, [name]: value }
-        if (name === 'country') {
-            next.state = ''
-            next.city = ''
-        }
-        if (name === 'state') {
-            next.city = ''
-        }
-        dispatch(mspWizardActions.setMspDetailsValues(next))
+  const handleChange = (name: string, value: string) => {
+    const next: FormValues = { ...formValues, [name]: value }
+    if (name === 'country') {
+      next.state = ''
+      next.city = ''
     }
-
-    const [leftColumnFields, rightColumnFields] = splitFieldsInHalf(FORM_FIELDS)
-    const columnFieldGroups = [leftColumnFields, rightColumnFields]
-
-    useEffect(() => {
-        if (submitAttempted) {
-            validate()
-        }
-    }, [formValues, submitAttempted, validate])
-
-    const handleNextClick = () => {
-        setSubmitAttempted(true)
-        if (validate()) {
-            dispatch(mspWizardActions.setActiveTab('billing'))
-        }
+    if (name === 'state') {
+      next.city = ''
     }
+    setMspDetailsValues(next)
+  }
 
-    return (
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-            {columnFieldGroups.map((columnFields, index) => (
-                <Box key={`column-${index}`} sx={{ width: { xs: '100%', md: 'calc(50% - 8px)' } }}>
-                    <FormSection
-                        fields={columnFields}
-                        formValues={formValues}
-                        errors={submitAttempted ? errors : {}}
-                        companies={companies}
-                        countries={countries}
-                        states={states}
-                        cities={cities}
-                        loadingCompanies={loadingCompanies}
-                        loadingCountries={loadingCountries}
-                        loadingStates={loadingStates}
-                        loadingCities={loadingCities}
-                        onChange={handleChange}
-                    />
-                </Box>
-            ))}
+  const [leftColumnFields, rightColumnFields] = splitFieldsInHalf(FORM_FIELDS)
+  const columnFieldGroups = [leftColumnFields, rightColumnFields]
 
-            <Box sx={{ width: '100%' }}>
-                <Stack direction="row" justifyContent="center" spacing={2} sx={{ mt: 1 }}>
-                    <SecondaryButton onClick={() => dispatch(mspWizardActions.setActiveTab('details'))}>back</SecondaryButton>
-                    <PrimaryButton onClick={handleNextClick}>next</PrimaryButton>
-                </Stack>
-            </Box>
+  useEffect(() => {
+    if (submitAttempted) {
+      validate()
+    }
+  }, [formValues, submitAttempted, validate])
+
+  const handleNextClick = () => {
+    setSubmitAttempted(true)
+    if (validate()) {
+      setActiveTab('billing')
+    }
+  }
+
+  return (
+    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+      {columnFieldGroups.map((columnFields, index) => (
+        <Box key={`column-${index}`} sx={{ width: { xs: '100%', md: 'calc(50% - 8px)' } }}>
+          <FormSection
+            fields={columnFields}
+            formValues={formValues}
+            errors={submitAttempted ? errors : {}}
+            companies={companies}
+            countries={countries}
+            states={states}
+            cities={cities}
+            loadingCompanies={loadingCompanies}
+            loadingCountries={loadingCountries}
+            loadingStates={loadingStates}
+            loadingCities={loadingCities}
+            onChange={handleChange}
+          />
         </Box>
-    )
+      ))}
+
+      <Box sx={{ width: '100%' }}>
+        <Stack direction="row" justifyContent="center" spacing={2} sx={{ mt: 1 }}>
+          <SecondaryButton onClick={() => setActiveTab('details')}>back</SecondaryButton>
+          <PrimaryButton onClick={handleNextClick}>next</PrimaryButton>
+        </Stack>
+      </Box>
+    </Box>
+  )
 }
 
 export default MspDetails

@@ -1,5 +1,5 @@
 import { Routes, Route } from 'react-router-dom'
-import BillingMspPage from './msppage/billingmsp'
+import BillingMspPage from './msppage'
 
 const App: React.FC = () => {
   return (

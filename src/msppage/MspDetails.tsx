@@ -1,12 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Box, Stack } from '@mui/material'
 import { PrimaryButton, SecondaryButton } from '../components/buttons'
 import { FormSection } from '../components/form'
-import { useValidate, type ValidationErrors } from '../components/hooks'
 import { FORM_FIELDS, splitFieldsInHalf } from './config'
 import type { FormValues } from './types'
 import { useLocationOptions } from '../services/useLocationOptions'
 import type { ActiveTab } from './types'
+import { COUNTRY_CODE_PHONE_PATTERN } from '../utils/patterns'
 
 interface MspDetailsProps {
   formValues: FormValues
@@ -14,11 +14,11 @@ interface MspDetailsProps {
   setActiveTab: (tab: ActiveTab) => void
 }
 
-const PHONE_PATTERN = /^\+\d{1,13}$/
 const ZIP_PATTERN = /^\d{6}$/
+type ValidationErrors = Partial<Record<keyof FormValues, string>>
 
-const validateMspDetails = (values: FormValues): ValidationErrors<FormValues> => {
-  const errors: ValidationErrors<FormValues> = {}
+const validateMspDetails = (values: FormValues): ValidationErrors => {
+  const errors: ValidationErrors = {}
 
   if (!values.company) errors.company = 'company is required'
   if (!values.name) errors.name = 'name is required'
@@ -26,11 +26,11 @@ const validateMspDetails = (values: FormValues): ValidationErrors<FormValues> =>
   if (!values.state) errors.state = 'state is required'
   if (!values.city) errors.city = 'city is required'
   if (!values.zip) errors.zip = 'zip is required'
-  if (values.zip && !ZIP_PATTERN.test(values.zip)) errors.zip
+  if (values.zip && !ZIP_PATTERN.test(values.zip)) errors.zip = 'zip must be 6 digits'
 
   ;(['phone-office', 'phone-home', 'cell'] as const).forEach((key) => {
     const value = values[key]
-    if (value && !PHONE_PATTERN.test(value)) {
+    if (value && !COUNTRY_CODE_PHONE_PATTERN.test(value)) {
       errors[key] = `${key} must be in +countrycode format`
     }
   })
@@ -40,12 +40,17 @@ const validateMspDetails = (values: FormValues): ValidationErrors<FormValues> =>
 
 const MspDetails: React.FC<MspDetailsProps> = ({ formValues, setMspDetailsValues, setActiveTab }) => {
   const [submitAttempted, setSubmitAttempted] = useState(false)
+  const [errors, setErrors] = useState<ValidationErrors>({})
 
   const { companies, countries, states, cities, loadingCompanies, loadingCountries, loadingStates, loadingCities } = useLocationOptions({
     selectedCountry: formValues.country ?? '',
     selectedState: formValues.state ?? ''
   })
-  const { errors, validate } = useValidate(formValues, validateMspDetails)
+  const validate = useCallback((values: FormValues = formValues): boolean => {
+    const nextErrors = validateMspDetails(values)
+    setErrors(nextErrors)
+    return Object.keys(nextErrors).length === 0
+  }, [formValues])
 
   const handleChange = (name: string, value: string) => {
     const next: FormValues = { ...formValues, [name]: value }

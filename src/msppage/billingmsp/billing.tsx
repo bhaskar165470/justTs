@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import {
   Typography,
   Container,
@@ -10,13 +10,13 @@ import {
 } from '@mui/material'
 import { InputField } from '../../components/form'
 import { PrimaryButton, SecondaryButton } from '../../components/buttons'
-import { useValidate, type ValidationErrors } from '../../components/hooks'
 import {
   type ActiveTab,
   type BillingValues,
   type AccountsPayableValues
 } from '../types'
 import { ACCOUNTS_PAYABLE_FIELDS, BILLING_ADDRESS_FIELDS } from '../config'
+import { COUNTRY_CODE_PHONE_PATTERN } from '../../utils/patterns'
 
 interface BillingProps {
   sameAsMspDetails: boolean
@@ -42,9 +42,30 @@ const formatCountryCodePhone = (input: string): string => {
 
 const formatZip = (input: string): string => input.replace(/\D/g, '').slice(0, 6)
 
-const PHONE_PATTERN = /^\+\d{1,13}$/
 const ZIP_PATTERN = /^\d{6}$/
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+type ValidationValues = BillingValues & AccountsPayableValues
+type ValidationErrors = Partial<Record<keyof ValidationValues, string>>
+
+const validateBilling = (values: ValidationValues): ValidationErrors => {
+  const errors: ValidationErrors = {}
+
+  if (!values.billTo) errors.billTo = 'bill to is required'
+  if (!values.address1) errors.address1 = 'address1 is required'
+  if (!values.country) errors.country = 'country is required'
+  if (!values.state) errors.state = 'state is required'
+  if (!values.city) errors.city = 'city is required'
+  if (!values.zip) errors.zip = 'zip is required'
+  if (values.zip && !ZIP_PATTERN.test(values.zip)) errors.zip = 'zip must be 6 digits'
+
+  if (!values.name) errors.name = 'name is required'
+  if (!values.phone) errors.phone = 'phone is required'
+  if (values.phone && !COUNTRY_CODE_PHONE_PATTERN.test(values.phone)) errors.phone = 'phone must be in +countrycode format'
+  if (!values.email) errors.email = 'email is required'
+  if (values.email && !EMAIL_PATTERN.test(values.email)) errors.email = 'email is invalid'
+
+  return errors
+}
 
 const Billing: React.FC<BillingProps> = ({
   sameAsMspDetails,
@@ -58,28 +79,14 @@ const Billing: React.FC<BillingProps> = ({
   submitting = false
 }) => {
   const [submitAttempted, setSubmitAttempted] = useState(false)
+  const [errors, setErrors] = useState<ValidationErrors>({})
 
-  const validationValues = { ...billingValues, ...accountsPayableValues }
-  const validateBilling = (values: typeof validationValues): ValidationErrors<typeof validationValues> => {
-    const errors: ValidationErrors<typeof validationValues> = {}
-
-    if (!values.billTo) errors.billTo = 'bill to is required'
-    if (!values.address1) errors.address1 = 'address1 is required'
-    if (!values.country) errors.country = 'country is required'
-    if (!values.state) errors.state = 'state is required'
-    if (!values.city) errors.city = 'city is required'
-    if (!values.zip) errors.zip = 'zip is required'
-    if (values.zip && !ZIP_PATTERN.test(values.zip)) errors.zip = 'zip must be 6 digits'
-
-    if (!values.name) errors.name = 'name is required'
-    if (!values.phone) errors.phone = 'phone is required'
-    if (values.phone && !PHONE_PATTERN.test(values.phone)) errors.phone = 'phone must be in +countrycode format'
-    if (!values.email) errors.email = 'email is required'
-    if (values.email && !EMAIL_PATTERN.test(values.email)) errors.email = 'email is invalid'
-
-    return errors
-  }
-  const { errors, validate } = useValidate(validationValues, validateBilling)
+  const validationValues: ValidationValues = { ...billingValues, ...accountsPayableValues }
+  const validate = useCallback((values: ValidationValues = validationValues): boolean => {
+    const nextErrors = validateBilling(values)
+    setErrors(nextErrors)
+    return Object.keys(nextErrors).length === 0
+  }, [validationValues])
 
   useEffect(() => {
     if (submitAttempted) {

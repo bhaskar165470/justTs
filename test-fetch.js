@@ -1,1 +1,0 @@
-const fetch = require('node-fetch');\n(async()=>{ const state='California'; const res=await fetch('https://countriesnow.space/api/v0.1/countries/state/cities',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({country:'United States',state})}); console.log('status',res.status); const json=await res.json(); console.log('json',json);})();

@@ -1,8 +1,15 @@
+import axios, { type AxiosError } from 'axios'
 import { api } from './api'
 
 export interface NamedOption {
   id: number
   name: string
+}
+
+interface IPaginationParams {
+  pageNumber?: number
+  pageSize?: number
+  activeStatus?: 0 | 1 | null
 }
 
 const toArray = (payload: unknown): Record<string, unknown>[] => {
@@ -55,34 +62,81 @@ const mapOptions = (
   return [...dedupedByName.values()]
 }
 
+const handleAxiosError = (error: AxiosError): void => {
+  console.error('Axios request failed:', error)
+  if (error.response) {
+    console.error('Response data:', error.response.data)
+    console.error('Response status:', error.response.status)
+    console.error('Response headers:', error.response.headers)
+    return
+  }
+  if (error.request) {
+    console.error('Request:', error.request)
+    return
+  }
+  console.error('Error:', error.message)
+}
+
 export const getCompanies = async (): Promise<NamedOption[]> => {
-  const response = await api.get('/api/ClientCompany/GetClientCompanies', {
-    params: { pageNumber: 1, pageSize: 500, ActiveStatus: 1 }
-  })
-  return mapOptions(toArray(response.data), ['companyID', 'companyId', 'id'], ['name', 'companyName'])
+  const params: Required<IPaginationParams> = { pageNumber: 1, pageSize: 1000, activeStatus: 1 }
+  try {
+    const response = await api.get('/api/ClientCompany/GetClientCompanies', { params })
+    return mapOptions(toArray(response.data), ['companyID', 'companyId', 'id'], ['name', 'companyName'])
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      handleAxiosError(error)
+    } else {
+      console.error('Non-Axios error occurred:', error)
+    }
+    throw error
+  }
 }
 
 export const getCountries = async (): Promise<NamedOption[]> => {
-  const response = await api.get('/api/Location/GetCountry', {
-    params: { pageNumber: 1, pageSize: 500, ActiveStatus: 1 }
-  })
-  return mapOptions(toArray(response.data), ['countryID', 'countryId', 'id'], ['name', 'countryName'])
+  const params: Required<IPaginationParams> = { pageNumber: 1, pageSize: 1000, activeStatus: 1 }
+  try {
+    const response = await api.get('/api/Location/GetCountry', { params })
+    return mapOptions(toArray(response.data), ['countryID', 'countryId', 'id'], ['name', 'countryName'])
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      handleAxiosError(error)
+    } else {
+      console.error('Non-Axios error occurred:', error)
+    }
+    throw error
+  }
 }
 
 export const getStatesByCountryId = async (countryId: number): Promise<NamedOption[]> => {
   if (!countryId) return []
-  const response = await api.get(`/api/Location/GetStateByCountryID/${countryId}`, {
-    params: { pageNumber: 1, pageSize: 500, ActiveStatus: 1 }
-  })
-  return mapOptions(toArray(response.data), ['stateID', 'stateId', 'id'], ['name', 'stateName'])
+  const params: Required<IPaginationParams> = { pageNumber: 1, pageSize: 10000, activeStatus: 1 }
+  try {
+    const response = await api.get(`/api/Location/GetStateByCountryID/${countryId}`, { params })
+    return mapOptions(toArray(response.data), ['stateID', 'stateId', 'id'], ['name', 'stateName'])
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      handleAxiosError(error)
+    } else {
+      console.error('Non-Axios error occurred:', error)
+    }
+    throw error
+  }
 }
 
 export const getCitiesByStateId = async (stateId: number): Promise<NamedOption[]> => {
   if (!stateId) return []
-  const response = await api.get(`/api/Location/GetCityByStateID/${stateId}`, {
-    params: { pageNumber: 1, pageSize: 1000, ActiveStatus: 1 }
-  })
-  return mapOptions(toArray(response.data), ['cityID', 'cityId', 'id'], ['name', 'cityName'])
+  const params: Required<IPaginationParams> = { pageNumber: 1, pageSize: 10000, activeStatus: 1 }
+  try {
+    const response = await api.get(`/api/Location/GetCityByStateID/${stateId}`, { params })
+    return mapOptions(toArray(response.data), ['cityID', 'cityId', 'id'], ['name', 'cityName'])
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      handleAxiosError(error)
+    } else {
+      console.error('Non-Axios error occurred:', error)
+    }
+    throw error
+  }
 }
 
 export const resolveCompanyByName = async (name: string): Promise<NamedOption | null> => {

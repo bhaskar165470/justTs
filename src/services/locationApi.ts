@@ -12,58 +12,11 @@ interface IPaginationParams {
   activeStatus?: 0 | 1 | null
 }
 
-const toArray = (payload: unknown): Record<string, unknown>[] => {
-  // Normalize varying backend payload shapes to a flat record array.
-  if (Array.isArray(payload)) return payload as Record<string, unknown>[]
-  if (payload && typeof payload === 'object') {
-    const record = payload as Record<string, unknown>
-    const candidates = ['data', 'items', 'result', 'results', 'records']
-    for (const key of candidates) {
-      const value = record[key]
-      if (Array.isArray(value)) return value as Record<string, unknown>[]
-    }
-    return [record]
-  }
-  return []
-}
+type ApiListResponse<T> = T[] | { data: T[] }
 
-const asNumber = (value: unknown): number | null => {
-  if (typeof value === 'number' && Number.isFinite(value)) return value
-  if (typeof value === 'string' && value.trim()) {
-    const parsed = Number(value)
-    if (Number.isFinite(parsed)) return parsed
-  }
-  return null
-}
-
-const asString = (value: unknown): string => (typeof value === 'string' ? value : '')
-const normalizeName = (value: string): string => value.trim().replace(/\s+/g, ' ')
-
-const mapOptions = (
-  items: Record<string, unknown>[],
-  idKeys: string[],
-  nameKeys: string[]
-): NamedOption[] => {
-  // Read from multiple possible key names because endpoints are not fully uniform.
-  const result = items
-    .map((item) => {
-      const id = idKeys.map((key) => asNumber(item[key])).find((value): value is number => value !== null)
-      const rawName = nameKeys.map((key) => asString(item[key])).find((value) => Boolean(value)) ?? ''
-      const name = normalizeName(rawName)
-      if (id === null || !name) return null
-      return { id, name }
-    })
-    .filter((option): option is NamedOption => Boolean(option))
-
-  const dedupedByName = new Map<string, NamedOption>()
-  result.forEach((option) => {
-    const key = option.name.toLowerCase()
-    if (!dedupedByName.has(key)) {
-      dedupedByName.set(key, option)
-    }
-  })
-
-  return [...dedupedByName.values()]
+const getList = <T>(payload: ApiListResponse<T>): T[] => {
+  if (Array.isArray(payload)) return payload
+  return payload.data
 }
 
 const handleAxiosError = (error: AxiosError): void => {
@@ -82,11 +35,37 @@ const handleAxiosError = (error: AxiosError): void => {
   console.error('Error:', error.message)
 }
 
+interface CompanyDto {
+  companyID: number
+  name: string
+}
+
+interface CountryDto {
+  countryID: number
+  name: string
+}
+
+interface StateDto {
+  stateID: number
+  name: string
+}
+
+interface CityDto {
+  cityID: number
+  name: string
+}
+
+const mapNamedOptions = <T>(items: T[], toOption: (item: T) => NamedOption): NamedOption[] =>
+  items.map(toOption)
+
 export const getCompanies = async (): Promise<NamedOption[]> => {
   const params: Required<IPaginationParams> = { pageNumber: 1, pageSize: 1000, activeStatus: 1 }
   try {
-    const response = await api.get('/api/ClientCompany/GetClientCompanies', { params })
-    return mapOptions(toArray(response.data), ['companyID', 'companyId', 'id'], ['name', 'companyName'])
+    const response = await api.get<ApiListResponse<CompanyDto>>('/api/ClientCompany/GetClientCompanies', { params })
+    return mapNamedOptions(getList(response.data), (company) => ({
+      id: company.companyID,
+      name: company.name
+    }))
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       handleAxiosError(error)
@@ -100,8 +79,11 @@ export const getCompanies = async (): Promise<NamedOption[]> => {
 export const getCountries = async (): Promise<NamedOption[]> => {
   const params: Required<IPaginationParams> = { pageNumber: 1, pageSize: 1000, activeStatus: 1 }
   try {
-    const response = await api.get('/api/Location/GetCountry', { params })
-    return mapOptions(toArray(response.data), ['countryID', 'countryId', 'id'], ['name', 'countryName'])
+    const response = await api.get<ApiListResponse<CountryDto>>('/api/Location/GetCountry', { params })
+    return mapNamedOptions(getList(response.data), (country) => ({
+      id: country.countryID,
+      name: country.name
+    }))
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       handleAxiosError(error)
@@ -117,8 +99,11 @@ export const getStatesByCountryId = async (countryId: number): Promise<NamedOpti
   if (!countryId) return []
   const params: Required<IPaginationParams> = { pageNumber: 1, pageSize: 10000, activeStatus: 1 }
   try {
-    const response = await api.get(`/api/Location/GetStateByCountryID/${countryId}`, { params })
-    return mapOptions(toArray(response.data), ['stateID', 'stateId', 'id'], ['name', 'stateName'])
+    const response = await api.get<ApiListResponse<StateDto>>(`/api/Location/GetStateByCountryID/${countryId}`, { params })
+    return mapNamedOptions(getList(response.data), (state) => ({
+      id: state.stateID,
+      name: state.name
+    }))
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       handleAxiosError(error)
@@ -133,8 +118,11 @@ export const getCitiesByStateId = async (stateId: number): Promise<NamedOption[]
   if (!stateId) return []
   const params: Required<IPaginationParams> = { pageNumber: 1, pageSize: 10000, activeStatus: 1 }
   try {
-    const response = await api.get(`/api/Location/GetCityByStateID/${stateId}`, { params })
-    return mapOptions(toArray(response.data), ['cityID', 'cityId', 'id'], ['name', 'cityName'])
+    const response = await api.get<ApiListResponse<CityDto>>(`/api/Location/GetCityByStateID/${stateId}`, { params })
+    return mapNamedOptions(getList(response.data), (city) => ({
+      id: city.cityID,
+      name: city.name
+    }))
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
       handleAxiosError(error)

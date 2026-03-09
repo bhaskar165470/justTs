@@ -6,6 +6,7 @@ import App from './App'
 import theme from './theme'
 import './styles.css'
 
+// Provider order: theme first, then router so all routes get consistent styling.
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>

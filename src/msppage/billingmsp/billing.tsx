@@ -33,6 +33,7 @@ interface BillingProps {
 type BillingAddressFieldKey = 'address1' | 'address2' | 'country' | 'state' | 'city' | 'zip'
 
 const formatCountryCodePhone = (input: string): string => {
+  // Accept pasted values and normalize to +<digits>.
   const raw = input.replace(/[^\d+]/g, '')
   const hasPlus = raw.startsWith('+')
   const digits = raw.replace(/\D/g, '').slice(0, 13)
@@ -48,6 +49,7 @@ type ValidationValues = BillingValues & AccountsPayableValues
 type ValidationErrors = Partial<Record<keyof ValidationValues, string>>
 
 const validateBilling = (values: ValidationValues): ValidationErrors => {
+  // Validation is centralized so both render-time and submit-time checks match.
   const errors: ValidationErrors = {}
 
   if (!values.billTo) errors.billTo = 'bill to is required'
@@ -95,16 +97,18 @@ const Billing: React.FC<BillingProps> = ({
   }, [billingValues, accountsPayableValues, submitAttempted, validate])
 
   const handleFieldChange = (field: keyof BillingValues, value: string) => {
+    // Enforce numeric zip input at the edge of state updates.
     const nextValue = field === 'zip' ? formatZip(value) : value
     setBillingField(field, nextValue)
   }
 
   const handleAccountsPayableFieldChange = (field: keyof AccountsPayableValues, value: string) => {
+    // Keep phone values in a backend-friendly canonical format.
     const nextValue = field === 'phone' ? formatCountryCodePhone(value) : value
     setAccountsPayableField(field, nextValue)
   }
 
-  const handleNextClick = async () => {
+  const handleSaveClick = async () => {
     setSubmitAttempted(true)
     if (validate()) {
       await onNext?.()
@@ -185,12 +189,12 @@ const Billing: React.FC<BillingProps> = ({
       </Paper>
 
       <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 2 }}>
-        <PrimaryButton disabled={submitting} onClick={() => setActiveTab('details')}>
-          back
-        </PrimaryButton>
-        <SecondaryButton disabled={submitting} onClick={handleNextClick}>
-          {submitting ? 'saving...' : 'next'}
+        <SecondaryButton disabled={submitting} onClick={() => setActiveTab('details')}>
+          prev
         </SecondaryButton>
+        <PrimaryButton disabled={submitting} onClick={handleSaveClick}>
+          {submitting ? 'saving...' : 'save'}
+        </PrimaryButton>
       </Box>
     </Container>
   )

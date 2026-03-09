@@ -22,6 +22,7 @@ export const api = axios.create({
 })
 
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  // Inject auth lazily so token source can be swapped by the host app.
   const token = getToken()
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
@@ -32,6 +33,7 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
+    // Allow app-level error handlers (logout, notifications, etc.).
     if (onApiError) {
       onApiError(error)
     }

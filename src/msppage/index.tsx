@@ -1,6 +1,5 @@
-import { useState } from 'react'
-import { Container, Typography, Box } from '@mui/material'
-import { PrimaryButton, SecondaryButton } from '../components/buttons'
+import { useState, type SyntheticEvent } from 'react'
+import { Container, Typography, Box, Tabs, Tab } from '@mui/material'
 import MspDetails from './MspDetails'
 import Billing from './billingmsp/billing'
 import { billingMspPageStyles } from './billingmsp/index.styles'
@@ -23,6 +22,7 @@ const ACCOUNTS_PAYABLE_INITIAL_VALUES: AccountsPayableValues = {
   email: ''
 }
 
+// Copy only fields that overlap between "details" and "billing" sections.
 const mapFormToBilling = (values: FormValues): BillingValues => ({
   billTo: values.company || values.name || '',
   address1: values.address1 || '',
@@ -32,6 +32,9 @@ const mapFormToBilling = (values: FormValues): BillingValues => ({
   city: values.city || '',
   zip: values.zip || ''
 })
+
+const detailsRequiredFieldsComplete = (values: FormValues): boolean =>
+  ['company', 'name', 'country', 'state', 'city', 'zip'].every((key) => Boolean(values[key]?.trim()))
 
 const BillingMspPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ActiveTab>('details')
@@ -44,6 +47,7 @@ const BillingMspPage: React.FC = () => {
 
   const setMspDetailsValues = (values: FormValues) => {
     setMspDetailsValuesState(values)
+    // Keep billing in sync only when the "same as" option is active.
     if (sameAsMspDetails) {
       setBillingValues(mapFormToBilling(values))
     }
@@ -52,6 +56,7 @@ const BillingMspPage: React.FC = () => {
   const setSameAsMspDetails = (same: boolean) => {
     setSameAsMspDetailsState(same)
     if (same) {
+      // Snapshot current details into billing when user enables the toggle.
       setBillingValues(mapFormToBilling(mspDetailsValues))
     }
   }
@@ -68,6 +73,12 @@ const BillingMspPage: React.FC = () => {
     // UI-only flow: no backend submit in this project.
     window.alert('UI flow complete. Backend submit is disabled here.')
   }
+  const canOpenBilling = detailsRequiredFieldsComplete(mspDetailsValues)
+  const handleTabChange = (_event: SyntheticEvent, value: ActiveTab) => {
+    // Guard billing tab until required details are present.
+    if (value === 'billing' && !canOpenBilling) return
+    setActiveTab(value)
+  }
 
   return (
     <Container maxWidth="lg" sx={billingMspPageStyles.container}>
@@ -78,17 +89,10 @@ const BillingMspPage: React.FC = () => {
       </Box>
 
       <Box sx={billingMspPageStyles.tabsRow}>
-        {activeTab === 'details' ? (
-          <PrimaryButton onClick={() => setActiveTab('details')}>details</PrimaryButton>
-        ) : (
-          <SecondaryButton onClick={() => setActiveTab('details')}>details</SecondaryButton>
-        )}
-
-        {activeTab === 'billing' ? (
-          <PrimaryButton onClick={() => setActiveTab('billing')}>billing</PrimaryButton>
-        ) : (
-          <SecondaryButton onClick={() => setActiveTab('billing')}>billing</SecondaryButton>
-        )}
+        <Tabs value={activeTab} onChange={handleTabChange}>
+          <Tab label="details" value="details" />
+          <Tab label="billing" value="billing" disabled={!canOpenBilling} />
+        </Tabs>
       </Box>
 
       {activeTab === 'details' && (

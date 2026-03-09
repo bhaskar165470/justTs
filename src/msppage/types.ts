@@ -1,3 +1,4 @@
+// Generic shape used by dynamic form sections keyed by field definition keys.
 export type FormValues = Record<string, string>
 
 export type FieldType = 'text' | 'company' | 'country' | 'state' | 'city' | 'status' | 'purpose'

@@ -2,6 +2,7 @@ import type { FieldDefinition } from './types'
 
 const toFieldKey = (label: string): string => label.replace(/\s+/g, '_').toLowerCase()
 
+// Single source of truth for the details form field order.
 export const FORM_FIELD_LABELS = [
     'company',
     'name',
@@ -24,6 +25,7 @@ export const FORM_FIELD_LABELS = [
 ]
 
 export const FORM_FIELDS: FieldDefinition[] = FORM_FIELD_LABELS.map((label) => {
+    // Field type controls which form widget gets rendered.
     if (label === 'company') return { label, key: toFieldKey(label), type: 'company' }
     if (label === 'country') return { label, key: toFieldKey(label), type: 'country' }
     if (label === 'state') return { label, key: toFieldKey(label), type: 'state' }
@@ -54,6 +56,7 @@ const FORM_FIELD_LABELS_BY_KEY: Record<string, string> = FORM_FIELDS.reduce<Reco
     {}
 )
 
+// Convert labels like "address1" to "address 1" for display-only text.
 const formatFieldLabel = (label: string): string => label.replace(/([A-Za-z])(\d)/g, '$1 $2')
 
 const getFieldLabel = (key: string, fallback: string): string => {
@@ -87,6 +90,7 @@ export const ACCOUNTS_PAYABLE_FIELDS: AccountsPayableFieldDefinition[] = [
 ]
 
 export const splitFieldsInHalf = (fields: FieldDefinition[]): [FieldDefinition[], FieldDefinition[]] => {
+    // Keep left column one item larger when there is an odd field count.
     const half = Math.ceil(fields.length / 2)
     return [fields.slice(0, half), fields.slice(half)]
 }

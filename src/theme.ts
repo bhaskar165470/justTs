@@ -1,6 +1,6 @@
 import { createTheme } from '@mui/material/styles'
 
-// simple default theme with black text
+// App-wide MUI theme overrides shared by all pages.
 const theme = createTheme({
   palette: {
     text: { primary: '#000000' }

@@ -13,6 +13,7 @@ interface IPaginationParams {
 }
 
 const toArray = (payload: unknown): Record<string, unknown>[] => {
+  // Normalize varying backend payload shapes to a flat record array.
   if (Array.isArray(payload)) return payload as Record<string, unknown>[]
   if (payload && typeof payload === 'object') {
     const record = payload as Record<string, unknown>
@@ -42,6 +43,7 @@ const mapOptions = (
   idKeys: string[],
   nameKeys: string[]
 ): NamedOption[] => {
+  // Read from multiple possible key names because endpoints are not fully uniform.
   const result = items
     .map((item) => {
       const id = idKeys.map((key) => asNumber(item[key])).find((value): value is number => value !== null)
@@ -63,6 +65,7 @@ const mapOptions = (
 }
 
 const handleAxiosError = (error: AxiosError): void => {
+  // Keep diagnostics detailed for API troubleshooting.
   console.error('Axios request failed:', error)
   if (error.response) {
     console.error('Response data:', error.response.data)
@@ -108,6 +111,7 @@ export const getCountries = async (): Promise<NamedOption[]> => {
 }
 
 export const getStatesByCountryId = async (countryId: number): Promise<NamedOption[]> => {
+  // Guard against unnecessary requests when parent selection is empty.
   if (!countryId) return []
   const params: Required<IPaginationParams> = { pageNumber: 1, pageSize: 10000, activeStatus: 1 }
   try {

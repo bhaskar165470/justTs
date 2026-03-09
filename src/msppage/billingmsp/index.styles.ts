@@ -1,3 +1,4 @@
+// Shared layout tokens for the MSP billing/details page shell.
 export const billingMspPageStyles = {
     container: { mt: 4 },
     header: {

@@ -26,6 +26,7 @@ interface UseLocationOptionsResult {
 const findOptionIdByName = (options: NamedOption[], name: string): number | null => {
   const selectedName = name.trim()
   if (!selectedName) return null
+  // APIs work with numeric ids, while form state stores display names.
   const found = options.find((option) => option.name === selectedName)
   return found?.id ?? null
 }
@@ -45,10 +46,12 @@ export const useLocationOptions = ({
   const [loadingCities, setLoadingCities] = useState(false)
 
   useEffect(() => {
+    // Prevent state updates when the component unmounts mid-request.
     let active = true
 
     const loadTopLevel = async () => {
       try {
+        // Load independent top-level lists in parallel for faster first render.
         setLoadingCompanies(true)
         setLoadingCountries(true)
         const [companies, countries] = await Promise.all([getCompanies(), getCountries()])
@@ -74,6 +77,7 @@ export const useLocationOptions = ({
   }, [])
 
   useEffect(() => {
+    // Country selection drives the available states (and clears stale dependent data).
     let active = true
 
     const loadStates = async () => {
@@ -106,6 +110,7 @@ export const useLocationOptions = ({
   }, [countryOptions, selectedCountry])
 
   useEffect(() => {
+    // State selection drives the available cities.
     let active = true
 
     const loadCities = async () => {
@@ -136,6 +141,7 @@ export const useLocationOptions = ({
     }
   }, [selectedState, stateOptions])
 
+  // Expose simple string arrays for dropdown components.
   const companies = useMemo(() => companyOptions.map((option) => option.name), [companyOptions])
   const countries = useMemo(() => countryOptions.map((option) => option.name), [countryOptions])
   const states = useMemo(() => stateOptions.map((option) => option.name), [stateOptions])

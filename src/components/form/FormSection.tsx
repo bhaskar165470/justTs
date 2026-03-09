@@ -27,6 +27,7 @@ const STATUS_OPTIONS = [
 const PURPOSE_OPTIONS = ['background verification', 'drug test']
 
 const formatCountryCodePhone = (input: string): string => {
+  // Shared phone normalizer for all detail fields that capture phone numbers.
   const raw = input.replace(/[^\d+]/g, '')
   const hasPlus = raw.startsWith('+')
   const digits = raw.replace(/\D/g, '').slice(0, 13)
@@ -56,6 +57,7 @@ const FormSection: React.FC<FormSectionProps> = ({
   loadingCities,
   onChange
 }) => {
+  // Render by field type so the caller only passes definitions + value map.
   const renderField = (field: FieldDefinition) => {
     const value = formValues[field.key] ?? ''
     const errorMessage = errors?.[field.key]

@@ -19,6 +19,7 @@ const InputField: React.FC<InputFieldProps> = ({
   error = false,
   helperText
 }) => {
+  // Thin wrapper around MUI TextField to standardize sizing/props across forms.
   return (
     <TextField
       fullWidth

@@ -29,6 +29,7 @@ const RadioField: React.FC<RadioFieldProps> = ({
   error = false,
   helperText
 }) => {
+  // Shared radio group wrapper with inline error rendering support.
   return (
     <FormControl error={error}>
       <FormLabel>{label}</FormLabel>

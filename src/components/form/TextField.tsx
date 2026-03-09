@@ -22,6 +22,7 @@ const FormTextField: React.FC<FormTextFieldProps> = ({
   error = false,
   helperText
 }) => {
+  // Standard select field used for company/country/state/city and similar lists.
   return (
     <TextField
       select

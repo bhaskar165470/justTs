@@ -52,13 +52,7 @@ const EnterInfoPage: React.FC = () => {
           fields={REUSED_FIELDS}
           formValues={formValues}
           companies={companies}
-          countries={[]}
-          states={[]}
-          cities={[]}
           loadingCompanies={loadingCompanies}
-          loadingCountries={false}
-          loadingStates={false}
-          loadingCities={false}
           onChange={(name, value) => setFormValues((prev) => ({ ...prev, [name]: value }))}
         />
 

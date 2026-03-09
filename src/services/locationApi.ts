@@ -37,6 +37,7 @@ const asNumber = (value: unknown): number | null => {
 }
 
 const asString = (value: unknown): string => (typeof value === 'string' ? value : '')
+const normalizeName = (value: string): string => value.trim().replace(/\s+/g, ' ')
 
 const mapOptions = (
   items: Record<string, unknown>[],
@@ -47,7 +48,8 @@ const mapOptions = (
   const result = items
     .map((item) => {
       const id = idKeys.map((key) => asNumber(item[key])).find((value): value is number => value !== null)
-      const name = nameKeys.map((key) => asString(item[key])).find((value) => Boolean(value)) ?? ''
+      const rawName = nameKeys.map((key) => asString(item[key])).find((value) => Boolean(value)) ?? ''
+      const name = normalizeName(rawName)
       if (id === null || !name) return null
       return { id, name }
     })
@@ -55,7 +57,7 @@ const mapOptions = (
 
   const dedupedByName = new Map<string, NamedOption>()
   result.forEach((option) => {
-    const key = option.name
+    const key = option.name.toLowerCase()
     if (!dedupedByName.has(key)) {
       dedupedByName.set(key, option)
     }

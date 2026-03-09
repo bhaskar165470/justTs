@@ -41,6 +41,7 @@ const BillingMspPage: React.FC = () => {
   const [mspDetailsValues, setMspDetailsValuesState] = useState<FormValues>({})
   const [sameAsMspDetails, setSameAsMspDetailsState] = useState(false)
   const [billingValues, setBillingValues] = useState<BillingValues>(BILLING_INITIAL_VALUES)
+  const [submitting, setSubmitting] = useState(false)
   const [accountsPayableValues, setAccountsPayableValues] = useState<AccountsPayableValues>(
     ACCOUNTS_PAYABLE_INITIAL_VALUES
   )
@@ -70,8 +71,13 @@ const BillingMspPage: React.FC = () => {
   }
 
   const handleSubmitMsp = async () => {
+    setSubmitting(true)
     // UI-only flow: no backend submit in this project.
-    window.alert('UI flow complete. Backend submit is disabled here.')
+    try {
+      window.alert('UI flow complete. Backend submit is disabled here.')
+    } finally {
+      setSubmitting(false)
+    }
   }
   const canOpenBilling = detailsRequiredFieldsComplete(mspDetailsValues)
   const handleTabChange = (_event: SyntheticEvent, value: ActiveTab) => {
@@ -111,8 +117,8 @@ const BillingMspPage: React.FC = () => {
           setBillingField={setBillingField}
           setAccountsPayableField={setAccountsPayableField}
           setActiveTab={setActiveTab}
-          onNext={handleSubmitMsp}
-          submitting={false}
+          onSave={handleSubmitMsp}
+          submitting={submitting}
         />
       )}
     </Container>

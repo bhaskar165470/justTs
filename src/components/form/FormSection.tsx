@@ -3,19 +3,20 @@ import InputField from './InputField'
 import RadioField from './Radio'
 import FormTextField from './TextField'
 import type { FieldDefinition, FormValues } from '../../msppage/types'
+import { formatCountryCodePhone, formatZip } from '../../utils/inputFormat'
 
 interface FormSectionProps {
   fields: FieldDefinition[]
   formValues: FormValues
   errors?: Partial<Record<string, string>>
-  companies: string[]
-  countries: string[]
-  states: string[]
-  cities: string[]
-  loadingCompanies: boolean
-  loadingCountries: boolean
-  loadingStates: boolean
-  loadingCities: boolean
+  companies?: string[]
+  countries?: string[]
+  states?: string[]
+  cities?: string[]
+  loadingCompanies?: boolean
+  loadingCountries?: boolean
+  loadingStates?: boolean
+  loadingCities?: boolean
   onChange: (name: string, value: string) => void
 }
 
@@ -25,17 +26,6 @@ const STATUS_OPTIONS = [
 ]
 
 const PURPOSE_OPTIONS = ['background verification', 'drug test']
-
-const formatCountryCodePhone = (input: string): string => {
-  // Shared phone normalizer for all detail fields that capture phone numbers.
-  const raw = input.replace(/[^\d+]/g, '')
-  const hasPlus = raw.startsWith('+')
-  const digits = raw.replace(/\D/g, '').slice(0, 13)
-  if (!digits) return ''
-  return `${hasPlus ? '+' : '+'}${digits}`
-}
-
-const formatZip = (input: string): string => input.replace(/\D/g, '').slice(0, 6)
 
 const getFormattedValue = (fieldKey: string, value: string): string => {
   if (fieldKey === 'zip') return formatZip(value)
@@ -47,14 +37,14 @@ const FormSection: React.FC<FormSectionProps> = ({
   fields,
   formValues,
   errors,
-  companies,
-  countries,
-  states,
-  cities,
-  loadingCompanies,
-  loadingCountries,
-  loadingStates,
-  loadingCities,
+  companies = [],
+  countries = [],
+  states = [],
+  cities = [],
+  loadingCompanies = false,
+  loadingCountries = false,
+  loadingStates = false,
+  loadingCities = false,
   onChange
 }) => {
   // Render by field type so the caller only passes definitions + value map.

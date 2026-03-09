@@ -17,6 +17,7 @@ import {
 } from '../types'
 import { ACCOUNTS_PAYABLE_FIELDS, BILLING_ADDRESS_FIELDS } from '../config'
 import { COUNTRY_CODE_PHONE_PATTERN } from '../../utils/patterns'
+import { formatCountryCodePhone, formatZip } from '../../utils/inputFormat'
 
 interface BillingProps {
   sameAsMspDetails: boolean
@@ -26,22 +27,11 @@ interface BillingProps {
   setBillingField: (field: keyof BillingValues, value: string) => void
   setAccountsPayableField: (field: keyof AccountsPayableValues, value: string) => void
   setActiveTab: (tab: ActiveTab) => void
-  onNext?: () => Promise<void> | void
+  onSave?: () => Promise<void> | void
   submitting?: boolean
 }
 
 type BillingAddressFieldKey = 'address1' | 'address2' | 'country' | 'state' | 'city' | 'zip'
-
-const formatCountryCodePhone = (input: string): string => {
-  // Accept pasted values and normalize to +<digits>.
-  const raw = input.replace(/[^\d+]/g, '')
-  const hasPlus = raw.startsWith('+')
-  const digits = raw.replace(/\D/g, '').slice(0, 13)
-  if (!digits) return ''
-  return `${hasPlus ? '+' : '+'}${digits}`
-}
-
-const formatZip = (input: string): string => input.replace(/\D/g, '').slice(0, 6)
 
 const ZIP_PATTERN = /^\d{6}$/
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -77,7 +67,7 @@ const Billing: React.FC<BillingProps> = ({
   setBillingField,
   setAccountsPayableField,
   setActiveTab,
-  onNext,
+  onSave,
   submitting = false
 }) => {
   const [submitAttempted, setSubmitAttempted] = useState(false)
@@ -111,7 +101,7 @@ const Billing: React.FC<BillingProps> = ({
   const handleSaveClick = async () => {
     setSubmitAttempted(true)
     if (validate()) {
-      await onNext?.()
+      await onSave?.()
     }
   }
 
